@@ -1,0 +1,297 @@
+<html>
+    <head>
+        <title>YOOMP!</title>
+        <meta charset="utf-8" />
+
+        <script id="vertex-shader-ball" type="x-shader/x-fragment">
+            precision mediump float;
+
+            uniform mat4 modelPosition;
+            uniform mat4 view;
+            uniform mat4 projection;
+            uniform float amplitude;
+
+            attribute vec3 a_position;
+            attribute vec3 a_normal;
+            attribute vec2 a_uv;
+            attribute float a_displacement;
+
+			varying vec3 vNormal;
+			varying vec2 vUv;
+
+			void main() {
+				vNormal = a_normal;
+				vUv = ( 0.5 + amplitude ) * a_uv + vec2(amplitude);
+
+                vec4 newPosition = modelPosition * vec4((a_position), 1.0);
+                vec3 clipSpace;
+                clipSpace.x = newPosition.x / 100.0; // 100.0 is one screen
+                clipSpace.y = newPosition.y / 100.0;
+                clipSpace.z = -newPosition.z / 100.0;
+
+				gl_Position = projection * view * vec4(clipSpace, 1.0);
+			}
+        </script>
+
+        <script id="fragment-shader-ball" type="x-shader/x-fragment">
+            precision mediump float;
+
+            uniform vec3 color;
+			uniform sampler2D texture;
+
+            varying vec3 vNormal;
+			varying vec2 vUv;
+
+			void main() {
+				//gl_FragColor = vec4(255.0, 255.0, 0.0, 1.0);
+                gl_FragColor = texture2D(texture, vUv);
+			}
+        </script>
+
+        <script id="vertex-shader-texture" type="x-shader/x-fragment">
+            uniform mat4 modelPosition;
+            uniform mat4 view;
+            uniform mat4 projection;
+            uniform float time;
+
+            uniform vec4 darkColor;
+            uniform vec4 lightColor;
+            uniform vec4 mediumColor;
+
+            attribute vec3 a_position;
+            attribute vec2 a_uv;
+
+            varying vec2 v_uv;
+            varying vec4 v_darkColor;
+            varying vec4 v_lightColor;
+            varying vec4 v_mediumColor;
+
+            void main() {
+                vec4 pos = modelPosition * vec4((a_position), 1.0);
+
+                vec3 clipSpace;
+                clipSpace.x = pos.x / 100.0; // 100.0 is one screen
+                clipSpace.y = pos.y / 100.0;
+                clipSpace.z = -pos.z / 100.0;
+
+                gl_Position = projection * view * vec4(clipSpace, 1.0);
+
+                v_uv = a_uv;
+                v_darkColor = darkColor;
+                v_lightColor = lightColor;
+                v_mediumColor = mediumColor;
+            }
+        </script>
+
+         <script id="fragment-shader-texture" type="x-shader/x-fragment">
+            precision mediump float;
+            varying vec2 v_uv;
+            varying vec4 v_darkColor;
+            varying vec4 v_lightColor;
+            varying vec4 v_mediumColor;
+            uniform sampler2D texture;
+
+            void main() {
+                vec4 dark = vec4(0.0, 0.0, 0.0, 1.0);
+                vec4 light = vec4(1.0, 1.0, 1.0, 1.0);
+                vec4 medium = vec4(0.0, 1.0, 0.0, 1.0);
+
+                if (texture2D(texture, v_uv) == dark) {
+                    gl_FragColor = v_darkColor;
+                } else if (texture2D(texture, v_uv) == light) {
+                    gl_FragColor = v_lightColor;
+                } else if (texture2D(texture, v_uv) == medium) {
+                    gl_FragColor = v_mediumColor;
+                } else {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // black maybe change to transparent
+                }
+            }
+        </script>
+
+        <script id="vertex-shader-pixel" type="x-shader/x-fragment">
+            uniform mat4 ModelPos;
+            uniform vec2 ScreenResolution;
+
+            attribute vec3 a_VertexPos;
+
+            void main() {
+                vec4 newPos = ModelPos * vec4(a_VertexPos, 1.0);
+
+                float ScreenRatio = ScreenResolution.x / ScreenResolution.y;
+
+
+                vec2 clipSpace;
+                //clipSpace *= ScreenRatio;
+                //vec2 ScreenRes = ScreenResolution * 0.5;
+
+                clipSpace = 2.0 * (newPos.xy / ScreenResolution) - vec2(1.0, -1.0);
+
+                //clipSpace -= vec2(1.0, -1.0);
+
+                //vec2 clipSpace = 0.5 * (vec2(newPos.x, newPos.y) / ScreenResolution) - 1.0;
+                gl_Position = vec4(clipSpace, 0.0, 1.0);
+            }
+        </script>
+
+        <script id="fragment-shader-pixel" type="x-shader/x-fragment">
+            precision highp float;
+
+            uniform vec3 color;
+
+            void main() {
+                gl_FragColor = vec4(color, 1.0);
+            }
+        </script>
+
+        <script id="vertex-shader-ui-texture" type="x-shader/x-fragment">
+            uniform mat4 ModelPos;
+            uniform vec2 ScreenResolution;
+
+            attribute vec3 a_VertexPos;
+            attribute vec2 a_uv;
+
+            varying vec2 vUv;
+
+            void main() {
+                vec4 newPos = ModelPos * vec4(a_VertexPos, 1.0);
+
+                float ScreenRatio = ScreenResolution.x / ScreenResolution.y;
+
+
+                vec2 clipSpace;
+                //clipSpace *= ScreenRatio;
+                //vec2 ScreenRes = ScreenResolution * 0.5;
+
+                clipSpace = 2.0 * (newPos.xy / ScreenResolution) - vec2(1.0, -1.0);
+
+                //clipSpace -= vec2(1.0, -1.0);
+
+                //vec2 clipSpace = 0.5 * (vec2(newPos.x, newPos.y) / ScreenResolution) - 1.0;
+                gl_Position = vec4(clipSpace, 0.0, 1.0);
+                vUv = a_uv;
+            }
+        </script>
+
+        <script id="fragment-shader-ui-texture" type="x-shader/x-fragment">
+            precision mediump float;
+
+            uniform sampler2D texture;
+            varying vec2 vUv;
+
+            void main() {
+                gl_FragColor = texture2D(texture, vUv);
+            }
+        </script>
+
+        <script id="vertex-shader-font" type="x-shader/x-fragment">
+            uniform mat4 ModelPos;
+            uniform vec2 ScreenResolution;
+
+            attribute vec3 a_VertexPos;
+            attribute vec2 a_uv;
+
+            varying vec2 vUv;
+
+            void main() {
+                vec4 newPos = ModelPos * vec4(a_VertexPos, 1.0);
+
+                float ScreenRatio = ScreenResolution.x / ScreenResolution.y;
+
+
+                vec2 clipSpace;
+                //clipSpace *= ScreenRatio;
+                //vec2 ScreenRes = ScreenResolution * 0.5;
+
+                clipSpace = 2.0 * (newPos.xy / ScreenResolution) - vec2(1.0, -1.0);
+
+                //clipSpace -= vec2(1.0, -1.0);
+
+                //vec2 clipSpace = 0.5 * (vec2(newPos.x, newPos.y) / ScreenResolution) - 1.0;
+                gl_Position = vec4(clipSpace, 0.0, 1.0);
+                vUv = a_uv;
+            }
+        </script>
+
+        <script id="fragment-shader-font" type="x-shader/x-fragment">
+            precision mediump float;
+
+            uniform sampler2D texture;
+            uniform vec4 color;
+            uniform float time;
+            varying vec2 vUv;
+
+            void main() {
+                vec4 dark = vec4(0.0, 0.0, 0.0, 1.0);
+                vec4 light = vec4(1.0, 1.0, 1.0, 1.0);
+                vec4 medium = vec4(0.0, 1.0, 0.0, 1.0);
+
+                float t = 1.0/cos(time);
+                if (t > 0.5) t = t - 0.5;
+                vec4 fontColor = color * t * vec4(0.95, 0.93, 0.97, 1.0);
+                vec4 fontColorDark = vec4(fontColor.xyw - 0.05, 1.0);
+                vec4 fontColorLight = vec4(fontColor.xyw + 0.05, 1.0);
+
+                if (texture2D(texture, vUv) == dark) {
+                    gl_FragColor = fontColorDark;
+                } else if (texture2D(texture, vUv) == light) {
+                    //gl_FragColor = vec4(light, 1.0);
+                    gl_FragColor = fontColorLight;
+                } else if (texture2D(texture, vUv) == medium) {
+                    //gl_FragColor = vec4(medium, 1.0);
+                    gl_FragColor = fontColor;
+                } else {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // black maybe change to transparent
+                }
+            }
+        </script>
+
+        <script>
+            window.onload = () => {
+                startGame(gs)
+            }
+        </script>
+
+        <link rel="stylesheet" type="text/css" href="misc/css/main.css">
+
+        <script src="misc/js/levels/level1.js"     type="text/javascript"></script>
+
+        <script src="misc/js/debug.js"       type="text/javascript"></script> <!-- needs gs -->
+        <script src="misc/js/misc.js"        type="text/javascript"></script>
+        <script src="misc/js/config.js"      type="text/javascript"></script>
+        
+        <script src="misc/js/matrix.js"      type="text/javascript"></script> <!-- depends on misc | needs math -->
+        <script src="misc/js/vector.js"      type="text/javascript"></script>
+        <script src="misc/js/math.js"        type="text/javascript"></script>
+
+        <script src="misc/js/precomputed.js" type="text/javascript"></script> <!-- depends on math, config -->
+        <script src="misc/js/objects.js"     type="text/javascript"></script> <!-- depends on config -->
+
+        <script src="misc/js/level.js"       type="text/javascript"></script> <!-- depends on levels, objects -->
+        <script src="misc/js/position.js"    type="text/javascript"></script> <!-- depends on matrix, math | needs mesh -->
+        <script src="misc/js/time.js"        type="text/javascript"></script>
+        <script src="misc/js/input.js"       type="text/javascript"></script>
+        <script src="misc/js/audio.js"       type="text/javascript"></script>
+        <script src="misc/js/player.js"      type="text/javascript"></script> <!-- depends on vector, math -->
+
+        <script src="misc/js/shader.js"      type="text/javascript"></script>
+        <script src="misc/js/mesh.js"        type="text/javascript"></script> <!-- depends on matrix, vector, math, misc, shader, position -->
+        <script src="misc/js/text.js"        type="text/javascript"></script>
+        <script src="misc/js/camera.js"      type="text/javascript"></script> <!-- depends on matrix, vector -->
+        <script src="misc/js/scene.js"       type="text/javascript"></script> <!-- needs mesh -->
+        <script src="misc/js/renderer.js"    type="text/javascript"></script> <!-- depends on shader | needs scene, camera -->
+
+        <script src="misc/js/main.js"        type="text/javascript"></script>
+    </head>
+    <body>
+        <img id="textureAtlas" src="misc/assets/gfx/textureAtlas.png" width="0" height="0" />
+        <img id="circle"       src="misc/assets/gfx/circle.png"       width="0" height="0" />
+        <img id="bgBlue"       src="misc/assets/gfx/cat.jpg"          width="0" height="0" />
+        <img id="bg1"          src="misc/assets/gfx/menu2.png"        width="0" height="0" />
+        <img id="water"        src="misc/assets/gfx/water.jpg"        width="0" height="0" />
+        <img id="font"         src="misc/assets/gfx/font.png"         width="0" height="0" />
+        
+        <div id="container">
+            <div id="debugInfo"></div>
+        </div>
+    </body>
+</html>

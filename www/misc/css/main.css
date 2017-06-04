@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css?family=Sintony&subset=latin-ext');
+
+html, body, div, canvas {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100%;
+    background-color: black;
+    overflow: hidden;
+    /*background-image: url("../assets/gfx/bg.png"); */
+    background-position: center;
+    font-family: 'Sintony', sans-serif;
+}
+
+#container {
+    height: 85%;
+    width: 90%;
+    position: relative;
+}
+
+canvas {
+    width: 1200px;
+    height: 900px;
+    position: absolute;
+    display: block;
+    left: 0;
+    top: 0;
+
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+#debugInfo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    background-color: #42858C;
+    border: 3px solid #35393C;
+    font-size: 32px;
+    color: white;
+    padding: 15px;
+}

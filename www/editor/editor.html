@@ -1,0 +1,322 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Yoomp Editor</title>
+    <meta charset="utf-8"/>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script src="../Net.js"></script>
+    <script src="misc/js/vector.js"></script>
+    <script src="misc/js/config.js"></script>
+    <script src="misc/js/objects.js"></script>
+    <script src="editor/js/LevelEditor.js"></script>
+
+    <script src="misc/js/levels/level1.js"     type="text/javascript"></script>
+
+    <script src="misc/js/time.js"      type="text/javascript"></script>
+    <script src="misc/js/gl-matrix.js" type="text/javascript"></script>
+    <script src="misc/js/audio.js"     type="text/javascript"></script>
+    <script src="misc/js/renderer.js"  type="text/javascript"></script>
+    <script src="misc/js/main.js"      type="text/javascript"></script>
+
+    <script id="vertex-shader-color" type="x-shader/x-fragment">
+            uniform mat4 uWorld;
+            uniform mat4 uView;
+            uniform mat4 uProj;
+            uniform float uTime;
+
+            attribute vec3 a_position;
+            attribute vec3 a_color;
+
+            varying vec3 color;
+
+            void main() {
+                vec4 pos = uWorld * vec4((a_position), 1.0);
+
+                vec3 clipSpace;
+                clipSpace.x =  pos.x  / 100.0; // 100.0 is one screen
+                clipSpace.y =  pos.y  / 100.0;
+                clipSpace.z = -pos.z  / 100.0;
+
+                gl_Position = uProj * uView * vec4(clipSpace, 1.0);
+
+                color = a_color;
+            }
+        </script>
+
+        <script id="vertex-shader-texture" type="x-shader/x-fragment">
+            uniform mat4 uWorld;
+            uniform mat4 uView;
+            uniform mat4 uProj;
+            uniform float uTime;
+
+            uniform vec4 a_darkColor;
+            uniform vec4 a_lightColor;
+            uniform vec4 a_mediumColor;
+
+            attribute vec3 a_position;
+            attribute vec2 a_texture;
+
+            varying vec2 texture;
+            varying vec4 darkColor;
+            varying vec4 lightColor;
+            varying vec4 mediumColor;
+
+            void main() {
+                vec4 pos = uWorld * vec4((a_position), 1.0);
+
+                vec3 clipSpace;
+                clipSpace.x = pos.x / 100.0; // 100.0 is one screen
+                clipSpace.y = pos.y / 100.0;
+                clipSpace.z = -pos.z / 100.0;
+
+                gl_Position = uProj * uView * vec4(clipSpace, 1.0);
+
+                texture = a_texture;
+                darkColor = a_darkColor;
+                lightColor = a_lightColor;
+                mediumColor = a_mediumColor;
+            }
+        </script>
+
+        <script id="fragment-shader-color" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec3 color;
+
+            void main() {
+                gl_FragColor = vec4(color, 1);
+            }
+        </script>
+
+         <script id="fragment-shader-texture" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec2 texture;
+            varying vec4 darkColor;
+            varying vec4 lightColor;
+            varying vec4 mediumColor;
+            uniform sampler2D sampler;
+
+            void main() {
+                //vec2 textureSize = vec2(8.0, 8.0);
+                //vec2 onePixel = vec2(1.0, 1.0) // textureSize;
+                vec4 dark = vec4(0.0, 0.0, 0.0, 1.0);
+                vec4 light = vec4(1.0, 1.0, 1.0, 1.0);
+                vec4 medium = vec4(0.0, 1.0, 0.0, 1.0);
+
+                if (texture2D(sampler, texture) == dark) {
+                    gl_FragColor = darkColor;
+                } else if (texture2D(sampler, texture) == light) {
+                    gl_FragColor = lightColor;
+                } else if (texture2D(sampler, texture) == medium) {
+                    gl_FragColor = mediumColor;
+                } else {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // black maybe change to transparent
+                }
+            }
+        </script>
+
+        <script id="vertex-shader-screen" type="x-shader/x-fragment">
+            attribute vec3 a_position;
+            attribute vec2 a_texture;
+
+            varying vec2 texture;
+
+            void main() {
+                gl_Position = vec4((a_position), 1.0);
+                texture = a_texture;
+            }
+        </script>
+
+        <script id="fragment-shader-screen" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec2 texture;
+            uniform sampler2D sampler;
+
+            void main() {
+                if (texture2D(sampler, texture) != vec4(1.0, 0.0, 1.0, 1.0)) {
+                    gl_FragColor = texture2D(sampler, texture);
+                } else {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                }
+            }
+        </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Sintony:400,700&subset=latin-ext');
+
+        @font-face {
+            font-family: Input;
+            src: url(editor/fonts/InputMono-Medium.ttf);
+        }
+
+        body {
+            margin: 20px;
+            overflow: hidden;
+        }
+
+        #menu
+        {
+            position: fixed;
+            width: 160px;
+            height: 100vh;
+            top: 0px;
+            left: 600px;
+            background-color: white;
+            color: white;
+            font-family: sans-serif;
+            padding: 10px;
+            line-height: 30px;
+            padding-left: 20px;
+        }
+
+        #panel
+        {
+            margin-right: 8px;
+            padding: 0;
+            position: absolute;
+            right: 0;
+            top: 20px;
+            width: 190px;
+        }
+
+        .button, #panel div
+        {
+            padding: 0;
+            margin-top: 8px;
+            width: 140px;
+            height: 32px;
+            background: #087E8B;
+            border: 3px solid lightgray;
+            color:white;
+            font-size: 15px;
+            font-weight: 300;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+            line-height: -4px;
+            font-family: 'Sintony', sans-serif;
+        }
+
+        .top {
+            margin-top: 80px;
+        }
+
+        .bottom {
+            margin-bottom: 24px;
+        }
+
+        .tile {
+            display: inline-block;
+            float: left;
+            width: 64px;
+            height: 64px;
+            border: 1px solid black;
+            image-rendering: pixelated;
+            background: url(misc/assets/gfx/textureAtlas.png);
+            background-size: 512px 512px;
+            background-repeat: no-repeat;
+            background-position: -400px 0px;
+        }
+
+        .break {
+            clear: both;
+        }
+
+        #end {
+            position: absolute;
+            right: 40px;
+            bottom: 10px;
+            width: 560px;
+        }
+
+        #text {
+            width: 600px;
+            font-family: 'Input', sans-serif;
+            font-size: 14px;
+        }
+
+        #load, #generate {
+            font-size: 20px;
+            line-height: 150%;
+            width: 180px;
+            height: 30px;
+            margin-top: 15px;
+        }
+
+        #tileContainer {
+            position: relative;
+            height: 900px;
+            width: 550px;
+            overflow-y: scroll;
+        }
+
+        #container {
+            position: fixed;
+            right: 0px;
+            top: 0px;
+        }
+
+        .minature {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            top: 11px;
+            image-rendering: pixelated;
+            background: url(misc/assets/gfx/textureAtlas.png);
+            background-size: 256px 256px;
+            background-repeat: no-repeat;
+        }
+
+        canvas {
+            image-rendering: optimizeSpeed;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: -o-crisp-edges;
+            image-rendering: pixelated;
+            -ms-interpolation-mode: nearest-neighbor;
+        }
+    </style>
+</head>
+<body>
+    <div id="tileContainer"></div>
+
+    <img id="textureAtlas" src="misc/assets/gfx/textureAtlas.png" width="0" height="0" />
+    <img id="circle"       src="misc/assets/gfx/circle.png"       width="0" height="0" />
+    <img id="bg-blue"      src="misc/assets/gfx/bg1.png"          width="0" height="0" />
+    
+    <div id="container">
+        <div id="debugInfo"></div>
+    </div>
+    
+    <div id="menu">
+        <div id="panel">
+            <span><div class="entity-type-button top" id="Empty">      EMPTY</div>           <img class="minature"></span>
+            <span><div class="entity-type-button" id="FloorTile1">     FloorTile1</div>      <img class="minature"></span>
+            <span><div class="entity-type-button" id="FloorTile2">     FloorTile2</div>      <img class="minature"></span>
+            <span><div class="entity-type-button" id="SmallHole">      SmallHole</div>       <img class="minature"></span>
+            <span><div class="entity-type-button" id="BigHole">        BigHole</div>         <img class="minature"></span>
+            <span><div class="entity-type-button" id="Savepoint">      Savepoint</div>       <img class="minature"></span>
+            <span><div class="entity-type-button" id="LongJump">       LongJump</div>        <img class="minature"></span>
+            <span><div class="entity-type-button" id="ExtraLife">      ExtraLife</div>       <img class="minature"></span>
+            <span><div class="entity-type-button" id="ExtraJump">      ExtraJump</div>       <img class="minature"></span>
+            <span><div class="entity-type-button" id="Shifter">        Shifter</div>         <img class="minature"></span>
+            <span><div class="entity-type-button" id="Teleport">       Teleport</div>        <img class="minature"></span>
+            <span><div class="entity-type-button" id="TunnelStart">    TunnelStart</div>     <img class="minature"></span>
+            <span><div class="entity-type-button" id="TunnelStop">     TunnelStop</div>      <img class="minature"></span>
+            <span><div class="entity-type-button" id="BrightnessPlus"> BrightnessPlus</div>  <img class="minature"></span>
+            <span><div class="entity-type-button" id="BrightnessMinus">BrightnessMinus</div> <img class="minature"></span>
+            <span><div class="entity-type-button" id="Lightning">      Lightning</div>       <img class="minature"></span>
+            <span><div class="entity-type-button" id="Earthquake">     Earthquake</div>      <img class="minature"></span>
+            <span><div class="entity-type-button" id="NextLevel">      NextLevel</div>       <img class="minature"></span>
+        </div>
+    </div>
+
+    <div id="end">
+        <textarea id="text" rows="24" cols="50"></textarea>
+        <input id="levelLengthInput" type="number" min="1" max="1000" value="8">
+        <input type="file"  id="fileInput">
+        <div class="button" id="save">SAVE</div>
+    </div>
+</body>
+</html>
