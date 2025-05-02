@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "target": "ES2022",
+      "allowJs": true,
+      "resolveJsonModule": true,
+      "moduleDetection": "force",
+      "isolatedModules": true,
+  
+      "strict": true,
+      "noUncheckedIndexedAccess": true,
+      "checkJs": true,
+  
+      /* If NOT transpiling with 'tsc': */
+      "noEmit": true, // Prevent 'tsc' from generating output files if you only use 'bun run'
+  
+      /* If transpiling with 'tsc': */
+      // "outDir": "./dist", // Specify output directory for compiled JS
+      // "sourceMap": true, // Generate source maps for debugging
+  
+      "module": "ESNext",
+      "moduleResolution": "bundler",
+      // "baseUrl": ".",
+      // "paths": {},
+  
+      "jsx": "react-jsx", // Required by Bun: use "react-jsx" or "preserve"
+      "lib": [
+        "ESNext", // Include latest ECMAScript features
+        // Add "DOM" if you use browser APIs (Bun polyfills many)
+        // "DOM",
+        // "DOM.Iterable"
+      ],
+      "types": [
+        "bun-types",
+        "node" // Add "node" if using Node.js compatibility APIs (like 'fs', 'path' in our example)
+      ]
+    },
+    // Optional: Specify source directory if you structure your project that way
+    // "include": ["src/**/*"],
+    // "exclude": ["node_modules", "dist", "test"] // Directories to exclude
+  }
