@@ -4,7 +4,7 @@
  */
 
 export function createErrorResponse(message: string, status: number = 500): Response {
-    console.error(`Responding with error [${status}]: ${message}`); // Log errors being sent
+    console.error(`Responding with error [${status}]: ${message}`);
     return new Response(JSON.stringify({ success: false, message: message }), {
        status: status,
        headers: { 'Content-Type': 'application/json; charset=utf-8' }

@@ -11,6 +11,6 @@ let server = startServer();
 process.on('SIGINT', () => gracefulShutdown('SIGINT', server, PORT)); // NOTE: Ctrl+C
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM', server, PORT)); // NOTE: Standard termination signal
 
+console.log(`🚀 Elysia server running at http://${server.hostname}:${server.port}`);
 console.log(`Serving static files from: ${WWW_ROOT}`);
 console.log(`User data operations restricted to: ${USER_DATA_ROOT}`);
-console.log(`Bun server listening on http://${server.hostname}:${server.port}`);

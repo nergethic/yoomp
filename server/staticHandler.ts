@@ -19,7 +19,7 @@ export async function handleStaticFileRequest(pathname: string): Promise<Respons
         const requestedPath = path.join(WWW_ROOT, safeSuffix);
 
         if (!path.resolve(requestedPath).startsWith(path.resolve(WWW_ROOT))) {
-            console.warn(`Attempt to access file outside WWW_ROOT: ${pathname}`);
+            console.warn(`Forbidden: Attempt to access file outside WWW_ROOT: ${pathname}`);
             return createErrorResponse("Forbidden", 403);
         }
         filePath = requestedPath;
@@ -36,7 +36,7 @@ export async function handleStaticFileRequest(pathname: string): Promise<Respons
             return createErrorResponse("Not Found", 404);
         }
     } catch (error: any) {
-         console.error(`Error accessing static file ${filePath}:`, error);
-         return createErrorResponse("Internal Server Error accessing file", 500);
+         console.error(`Internal Server Error accessing static file ${filePath}:`, error);
+         throw new Error(`Internal server error while accessing static file: ${error.message}`);
     }
 }
