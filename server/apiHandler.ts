@@ -11,18 +11,16 @@ import { createErrorResponse, createSuccessResponse } from './response.js';
  * for the /api/file endpoint.
  */
 interface ApiRequestBody {
-    action: 'CREATE_FILE' | 'READ_FILE'; // Use literal types for known actions
-    path: string; // Relative path within USER_DATA_ROOT
-    data?: string; // Data is expected to be string for CREATE_FILE
+    action: 'CREATE_FILE' | 'READ_FILE'; // NOTE: Use literal types for known actions
+    path: string; // NOTE: Relative path within USER_DATA_ROOT
+    data?: string; // NOTE: Data is expected to be string for CREATE_FILE
 }
 
 export async function handleApiFileRequest(req: Request): Promise<Response> {
     let requestData: ApiRequestBody;
     try {
-         // Validate request method (redundant if router checks, but good practice)
-         if (req.method !== "POST") {
+         if (req.method !== "POST")
              return createErrorResponse("Method Not Allowed", 405);
-         }
          requestData = await req.json() as ApiRequestBody;
     } catch (e) {
          console.error("Failed to parse JSON body for /api/file:", e);
