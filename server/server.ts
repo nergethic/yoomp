@@ -9,6 +9,8 @@ import { handleStaticFileRequest } from './staticHandler.js';
 import { handleApiFileRequest } from './apiHandler.js';
 import { createErrorResponse } from './response.js';
 
+let isShuttingDown = false;
+
 async function routeRequest(req: Request): Promise<Response> {
     const url = new URL(req.url);
     const pathname = url.pathname;
@@ -37,6 +39,26 @@ export const serverConfig: Serve = {
         return createErrorResponse("An unexpected server error occurred", 500);
     }
 };
+
+export async function gracefulShutdown(signal: string, server: Bun.Server, port: number | string) {
+    if (isShuttingDown) {
+        console.log('Shutdown already in progress. Force exiting...');
+        process.exit(1);
+    }
+
+    isShuttingDown = true;
+    console.log(`\nReceived ${signal}. Starting graceful shutdown for server on port ${port}...`);
+
+    try {
+        server.stop(true);
+        console.log(`Bun server on port ${port} stopped accepting new connections.`);
+        console.log(`Shutdown complete for server on port ${port}. Exiting.`);
+        process.exit(0);
+    } catch (error) {
+        console.error(`Error during graceful shutdown for server on port ${port}:`, error);
+        process.exit(1);
+    }
+}
 
 export function startServer() {
     const server = Bun.serve(serverConfig);
