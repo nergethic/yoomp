@@ -2,15 +2,21 @@
     "compilerOptions": {
       "esModuleInterop": true,
       "skipLibCheck": true,
-      "target": "ES2022",
+      "target": "ESNext",
       "allowJs": true,
+      "checkJs": true,
       "resolveJsonModule": true,
       "moduleDetection": "force",
       "isolatedModules": true,
+      "forceConsistentCasingInFileNames": true,
+      "rootDir": "./",
   
       "strict": true,
       "noUncheckedIndexedAccess": true,
-      "checkJs": true,
+      // "noFallthroughCasesInSwitch": true,
+      "noUnusedLocals": false,
+      "noUnusedParameters": false,
+      "noPropertyAccessFromIndexSignature": false,
   
       /* If NOT transpiling with 'tsc': */
       "noEmit": true, // Prevent 'tsc' from generating output files if you only use 'bun run'
@@ -33,10 +39,16 @@
       ],
       "types": [
         "bun-types",
-        "node" // Add "node" if using Node.js compatibility APIs (like 'fs', 'path' in our example)
+        "node", // if using Node.js compatibility APIs (like 'fs', 'path' in our example)
       ]
     },
-    // Optional: Specify source directory if you structure your project that way
-    // "include": ["src/**/*"],
-    // "exclude": ["node_modules", "dist", "test"] // Directories to exclude
+    "include": [
+      "index.ts",
+      "server/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "userData",
+      "www"
+    ]
   }
