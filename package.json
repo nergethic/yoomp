@@ -1,10 +1,22 @@
 {
   "devDependencies": {
+    "@types/bun": "^1.2.11",
     "@types/node": "^22.15.3",
     "bun-types": "^1.2.11",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "elysia": "^1.2.25"
+  },
+  "scripts": {
+    "start:backend": "bun run index.ts",
+    "dev:backend": "bun --watch run index.ts",
+
+    "build:frontend": "bun build ./www/js/main.ts --outdir ./www/dist/js --target browser --sourcemap",
+    "watch:frontend": "bun build ./www/js/main.ts --outdir ./www/dist/js --target browser --sourcemap --watch",
+    "typecheck:frontend": "tsc --project ./www/tsconfig.json",
+
+    "typecheck": "bun run typecheck:frontend && bun run typecheck:backend",
+    "dev": "echo 'Starting dev servers...' && bun run watch:frontend & bun run dev:backend"
   }
 }

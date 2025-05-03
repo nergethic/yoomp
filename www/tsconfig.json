@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleDetection": "force",
+        "jsx": "react-jsx",
+        "allowJs": true,
+        "checkJs": true,
+        "sourceMap": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+  
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+  
+        "strict": true,
+        "skipLibCheck": true, // NOTE: Skip type checking of declaration files (*.d.ts) for faster checks
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+  
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noPropertyAccessFromIndexSignature": false,
+        "forceConsistentCasingInFileNames": true,
+    },
+    "include": [
+        "misc/js/**/*.ts",
+        "editor/js/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}
