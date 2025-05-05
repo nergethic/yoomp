@@ -12,8 +12,8 @@
     "start:backend": "bun run index.ts",
     "dev:backend": "bun --watch run index.ts",
 
-    "build:frontend": "bun build ./www/js/main.ts --outdir ./www/dist/js --target browser --sourcemap",
-    "watch:frontend": "bun build ./www/js/main.ts --outdir ./www/dist/js --target browser --sourcemap --watch",
+    "build:frontend": "bun build ./www/misc/js/main.ts --outdir ./www/dist/js --target browser --sourcemap",
+    "watch:frontend": "bun build ./www/misc/js/main.ts --outdir ./www/dist/js --target browser --sourcemap --watch",
     "typecheck:frontend": "tsc --project ./www/tsconfig.json",
 
     "typecheck": "bun run typecheck:frontend && bun run typecheck:backend",
